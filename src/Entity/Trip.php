@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="couriers")
+ * @ORM\Table(name="trips")
  * @ORM\Entity
  */
 class Trip
