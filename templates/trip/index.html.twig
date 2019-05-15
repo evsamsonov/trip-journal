@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Поездки</h1>
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        {{ form_widget(form) }}
+
+        <input type="submit" value="Показать"/>
+    {{ form_end(form) }}
+
+    <table>
+        <tr>
+            <th>Регион</th>
+            <th>Дата выезда</th>
+            <th>ФИО курьера</th>
+        </tr>
+        <tr>
+            {% for trip in trips %}
+                <td>{{ trip.region.name }}</td>
+                <td>{{ trip.date|date('d.m.Y') }}</td>
+                <td>{{ trip.courier.fullName }}</td>
+            {% endfor %}
+        </tr>
+    </table>
+{% endblock %}

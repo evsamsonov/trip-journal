@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(name="trips")
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\TripRepository")
  */
 class Trip
 {
@@ -97,7 +97,7 @@ class Trip
     /**
      * @return Region
      */
-    public function getCourier(): Region
+    public function getCourier(): Courier
     {
         return $this->courier;
     }
