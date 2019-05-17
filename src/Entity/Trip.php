@@ -3,10 +3,11 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Table(name="trips")
- * @ORM\Entity(repositoryClass="App\Repository\TripRepository")
+ * @ORM\Entity
  */
 class Trip
 {
@@ -20,13 +21,21 @@ class Trip
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date", type="date", nullable=false)
+     * @ORM\Column(name="start_date", type="date", nullable=false)
+     * @Assert\NotBlank()
      */
-    private $date;
+    private $startDate;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="end_date", type="date", nullable=false)
+     */
+    private $endDate;
 
     /**
      * @var Region
-     *
+     * @Assert\NotBlank()
      * @ORM\ManyToOne(targetEntity="Region", inversedBy="trips")
      * @ORM\JoinColumn(name="region_id", referencedColumnName="id")
      */
@@ -34,11 +43,17 @@ class Trip
 
     /**
      * @var Region
-     *
+     * @Assert\NotBlank()
      * @ORM\ManyToOne(targetEntity="Courier", inversedBy="trips")
      * @ORM\JoinColumn(name="courier_id", referencedColumnName="id")
      */
     private $courier;
+
+    /**
+     * @var int
+     * @ORM\Column(name="courier_id", type="integer", nullable=false)
+     */
+    private $courierId;
 
     /**
      * @return mixed
@@ -61,25 +76,25 @@ class Trip
     /**
      * @return \DateTime
      */
-    public function getDate(): \DateTime
+    public function getStartDate(): ?\DateTime
     {
-        return $this->date;
+        return $this->startDate;
     }
 
     /**
-     * @param \DateTime $date
+     * @param \DateTime $startDate
      * @return self
      */
-    public function setDate(\DateTime $date): self
+    public function setStartDate(\DateTime $startDate): self
     {
-        $this->date = $date;
+        $this->startDate = $startDate;
         return $this;
     }
 
     /**
      * @return Region
      */
-    public function getRegion(): Region
+    public function getRegion(): ?Region
     {
         return $this->region;
     }
@@ -97,7 +112,7 @@ class Trip
     /**
      * @return Region
      */
-    public function getCourier(): Courier
+    public function getCourier(): ?Courier
     {
         return $this->courier;
     }
@@ -109,6 +124,42 @@ class Trip
     public function setCourier(Courier $courier): self
     {
         $this->courier = $courier;
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getEndDate(): ?\DateTime
+    {
+        return $this->endDate;
+    }
+
+    /**
+     * @param \DateTime $endDate
+     * @return self
+     */
+    public function setEndDate(\DateTime $endDate): self
+    {
+        $this->endDate = $endDate;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCourierId(): ?int
+    {
+        return $this->courierId;
+    }
+
+    /**
+     * @param int $courierId
+     * @return self
+     */
+    public function setCourierId($courierId): self
+    {
+        $this->courierId = $courierId;
         return $this;
     }
 }

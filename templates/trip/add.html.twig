@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Добавить поездку{% endblock %}
+
+{% block body %}
+    <h1>Добавить поездку</h1>
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        {{ form_widget(form) }}
+
+        <div>
+            <span>Дата прибытия в регион: </span>
+            <span>1</span>
+        </div>
+
+        <input type="submit" value="Добавить"/>
+    {{ form_end(form) }}
+{% endblock %}

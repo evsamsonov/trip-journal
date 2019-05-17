@@ -38,6 +38,14 @@ class Courier
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getFullName();
+    }
+
+    /**
      * @return mixed
      */
     public function getId(): ?int

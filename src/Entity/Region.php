@@ -46,6 +46,14 @@ class Region
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->getName();
+    }
+
+    /**
      * @return mixed
      */
     public function getId(): ?int

@@ -3,10 +3,14 @@
 namespace App\Manager;
 
 use App\Entity\Trip;
+use App\Exception\BusyCourierException;
+use App\Exception\DatabaseException;
+use App\Exception\InvalidArgumentException;
+use App\Model\TripFilter;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 
-class TripManager
+class TripManager implements TripManagerInterface
 {
     /** @var EntityManagerInterface|EntityManager  */
     private $entityManager;
@@ -20,30 +24,69 @@ class TripManager
     }
 
     /**
-     * @param array $filters
-     * @return Trip[]
+     * @inheritdoc
      */
-    public function getTrips(array $filters = []): array
+    public function getTrips(TripFilter $filter): array
     {
         $queryBuilder = $this->entityManager->getRepository(Trip::class)->createQueryBuilder('t');
-        if (isset($filters['start_date']) && $filters['start_date'] instanceof \DateTimeInterface) {
-            /** @var \DateTime $startDate */
-            $startDate = $filters['start_date'];
+        if ($filter->getStartDate()) {
             $queryBuilder
-                ->andWhere('t.date >= :date')
-                ->setParameter('date', $startDate->format('Y-m-d'))
-            ;
+                ->andWhere('t.date >= :start_date')
+                ->setParameter('start_date', $filter->getStartDate());
         }
 
-        if (isset($filters['end_date']) && $filters['end_date'] instanceof \DateTimeInterface) {
-            /** @var \DateTime $startDate */
-            $endDate = $filters['end_date'];
+        if ($filter->getEndDate()) {
             $queryBuilder
-                ->andWhere('t.date <= :date')
-                ->setParameter('date', $endDate->format('Y-m-d'))
-            ;
+                ->andWhere('t.date <= :end_date')
+                ->setParameter('end_date', $filter->getEndDate());
         }
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function addTrip(Trip $trip): void
+    {
+        if (null === $trip->getRegion() || null === $trip->getCourier()) {
+            throw new InvalidArgumentException('Не задан регион поездки или курьер');
+        }
+
+        $endDate = clone $trip->getStartDate();
+        $endDate->modify(sprintf('+%d days', $trip->getRegion()->getDuration()));
+        $trip->setEndDate($endDate);
+
+        if (false === $this->isFreeCourier($trip)) {
+            throw new BusyCourierException('У курьера есть поездки в этот период. Одновременно он может быть только в одной');
+        }
+
+        try {
+            $this->entityManager->persist($trip);
+            $this->entityManager->flush();
+        } catch (\Throwable $e) {
+            throw new DatabaseException('Ошибка при сохранении данных');
+        }
+    }
+
+    /**
+     * Проверить, свободен ли курьер для текущей поездки
+     * @param Trip $trip
+     * @return bool
+     */
+    private function isFreeCourier(Trip $trip): bool
+    {
+        $result = $this->entityManager->getRepository(Trip::class)->createQueryBuilder('t')
+            ->where('t.startDate <= :end_date')
+            ->andWhere('t.endDate >= :start_date')
+            ->andWhere('t.courierId = :courier_id')
+            ->setParameter('start_date', $trip->getStartDate())
+            ->setParameter('end_date', $trip->getEndDate())
+            ->setParameter('courier_id', $trip->getCourier()->getId())
+            ->getQuery()
+            ->setMaxResults(1)
+            ->getResult();
+
+        return count($result) === 0;
     }
 }
