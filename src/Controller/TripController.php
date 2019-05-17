@@ -3,13 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Trip;
+use App\Exception\InvalidArgumentException;
 use App\Form\Type\TripType;
 use App\Manager\TripManagerInterface;
 use App\Model\TripFilter;
 use App\Form\Type\TripFilterType;
-use App\Manager\TripManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,6 +19,8 @@ use App\Exception\ExceptionInterface;
 class TripController extends AbstractController
 {
     /**
+     * Отображение списка поездок
+     *
      * @Route("/")
      * @param Request $request
      * @param TripManagerInterface $tripManager
@@ -40,6 +43,8 @@ class TripController extends AbstractController
     }
 
     /**
+     * Добавление поездки
+     *
      * @Route("/trips/add", name="trip_add")
      * @param Request $request
      * @param TripManagerInterface $tripManager
@@ -61,6 +66,32 @@ class TripController extends AbstractController
 
         return $this->render('trip/add.html.twig', [
             'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * Получение даты окончания поездки
+     *
+     * @Route("/trips/end-date", name="trip_end_date")
+     * @param Request $request
+     * @param TripManagerInterface $tripManager
+     * @return Response
+     */
+    public function getEndDate(Request $request, TripManagerInterface $tripManager): Response
+    {
+        $startDate = $request->get('start_date');
+        $regionId = $request->get('region_id');
+
+        try {
+            $endDate = $tripManager->computeEndDate(new \DateTime($startDate), (int)$regionId);
+        } catch (ExceptionInterface $e) {
+            return new JsonResponse(['error' => ['message' => $e->getMessage()]]);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['error' => ['message' => 'Некорректный формат даты']]);
+        }
+
+        return new JsonResponse([
+            'end_date' => $endDate->format('d.m.Y')
         ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Manager;
 
+use App\Entity\Region;
 use App\Entity\Trip;
 use App\Exception\BusyCourierException;
 use App\Exception\DatabaseException;
@@ -53,8 +54,7 @@ class TripManager implements TripManagerInterface
             throw new InvalidArgumentException('Не задан регион поездки или курьер');
         }
 
-        $endDate = clone $trip->getStartDate();
-        $endDate->modify(sprintf('+%d days', $trip->getRegion()->getDuration()));
+        $endDate = $this->computeEndDate($trip->getStartDate(), $trip->getRegion());
         $trip->setEndDate($endDate);
 
         if (false === $this->isFreeCourier($trip)) {
@@ -67,6 +67,25 @@ class TripManager implements TripManagerInterface
         } catch (\Throwable $e) {
             throw new DatabaseException('Ошибка при сохранении данных');
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function computeEndDate(\DateTime $startDate, $region): \DateTime
+    {
+        if (is_int($region)) {
+            $region = $this->entityManager->getRepository(Region::class)->find($region);
+            if (null === $region) {
+                throw new InvalidArgumentException('Регион не найден');
+            }
+        } elseif ( ! $region instanceof Region) {
+            throw new InvalidArgumentException('Некорректный тип аргумента региона');
+        }
+
+        $endDate = clone $startDate;
+        $endDate->modify(sprintf('+%d days', $region->getDuration()));
+        return $endDate;
     }
 
     /**

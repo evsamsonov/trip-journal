@@ -19,4 +19,12 @@ interface TripManagerInterface
      * @param Trip $trip
      */
     public function addTrip(Trip $trip): void;
+
+    /**
+     * Считает день окончания поездки
+     * @param \DateTime $startDate
+     * @param mixed $region
+     * @return \DateTime
+     */
+    public function computeEndDate(\DateTime $startDate, $region): \DateTime;
 }
