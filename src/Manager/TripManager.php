@@ -8,6 +8,7 @@ use App\Exception\BusyCourierException;
 use App\Exception\DatabaseException;
 use App\Exception\InvalidArgumentException;
 use App\Model\TripFilter;
+use Doctrine\DBAL\TransactionIsolationLevel;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -54,18 +55,33 @@ class TripManager implements TripManagerInterface
             throw new InvalidArgumentException('Не задан регион поездки или курьер');
         }
 
-        $endDate = $this->computeEndDate($trip->getStartDate(), $trip->getRegion());
-        $trip->setEndDate($endDate);
+        $trip->setEndDate(
+            $this->computeEndDate($trip->getStartDate(), $trip->getRegion())
+        );
+
+        // Чтобы избежать одновременного добавления пересекающихся периодов, повысим уровень изолированности
+        // до максимального и выполним select и insert в транзакции
+        $connection = $this->entityManager->getConnection();
+
+        $isolation = $connection->getTransactionIsolation();
+        $connection->setTransactionIsolation(TransactionIsolationLevel::SERIALIZABLE);
+        $connection->beginTransaction();
 
         if (false === $this->isFreeCourier($trip)) {
+            $connection->rollBack();
             throw new BusyCourierException('У курьера есть поездки в этот период. Одновременно он может быть только в одной');
         }
 
         try {
             $this->entityManager->persist($trip);
             $this->entityManager->flush();
+            $connection->commit();
         } catch (\Throwable $e) {
+            $connection->rollBack();
             throw new DatabaseException('Ошибка при сохранении данных');
+        } finally {
+            // Вернем как было
+            $connection->setTransactionIsolation($isolation);
         }
     }
 
