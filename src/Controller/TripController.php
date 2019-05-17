@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Trip;
-use App\Exception\InvalidArgumentException;
 use App\Form\Type\TripType;
 use App\Manager\TripManagerInterface;
 use App\Model\TripFilter;
