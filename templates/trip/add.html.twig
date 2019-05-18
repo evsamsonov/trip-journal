@@ -1,5 +1,10 @@
 {% extends 'base.html.twig' %}
 
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('trip/add') }}
+{% endblock %}
+
 {% block title %}Добавить поездку{% endblock %}
 
 {% block body %}
@@ -9,9 +14,10 @@
 
         <div>
             <span>Дата прибытия в регион: </span>
-            <span>1</span>
+            <span id="trip_end_date"></span>
         </div>
 
         <input type="submit" value="Добавить"/>
     {{ form_end(form) }}
 {% endblock %}
+

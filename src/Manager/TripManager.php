@@ -80,7 +80,7 @@ class TripManager implements TripManagerInterface
             $connection->rollBack();
             throw new DatabaseException('Ошибка при сохранении данных');
         } finally {
-            // Вернем как было
+            // Вернем предыдущий уровень
             $connection->setTransactionIsolation($isolation);
         }
     }
