@@ -6,7 +6,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Table(name="trips")
+ * @ORM\Table(
+ *     name="trips",
+ *     indexes={@ORM\Index(name="start_date_idx", columns={"start_date"})}
+ * )
  * @ORM\Entity
  */
 class Trip
