@@ -15,12 +15,12 @@
             <th>Дата выезда</th>
             <th>ФИО курьера</th>
         </tr>
-        <tr>
-            {% for trip in trips %}
+        {% for trip in trips %}
+            <tr>
                 <td>{{ trip.region.name }}</td>
-                <td>{{ trip.date|date('d.m.Y') }}</td>
+                <td>{{ trip.startDate|date('d.m.Y') }}</td>
                 <td>{{ trip.courier.fullName }}</td>
-            {% endfor %}
-        </tr>
+            </tr>
+        {% endfor %}
     </table>
 {% endblock %}

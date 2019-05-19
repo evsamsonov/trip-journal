@@ -9,6 +9,7 @@
 
 {% block body %}
     <h1>Добавить поездку</h1>
+    <a href="{{ path('trip') }}">Список поездок</a>
     {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
         {{ form_widget(form) }}
 
