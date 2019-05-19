@@ -33,13 +33,13 @@ class TripManager implements TripManagerInterface
         $queryBuilder = $this->entityManager->getRepository(Trip::class)->createQueryBuilder('t');
         if ($filter->getStartDate()) {
             $queryBuilder
-                ->andWhere('t.date >= :start_date')
+                ->andWhere('t.startDate >= :start_date')
                 ->setParameter('start_date', $filter->getStartDate());
         }
 
         if ($filter->getEndDate()) {
             $queryBuilder
-                ->andWhere('t.date <= :end_date')
+                ->andWhere('t.startDate <= :end_date')
                 ->setParameter('end_date', $filter->getEndDate());
         }
 
@@ -68,7 +68,8 @@ class TripManager implements TripManagerInterface
         $connection->beginTransaction();
 
         if (false === $this->isFreeCourier($trip)) {
-            $connection->rollBack();
+            $connection->commit();
+            $connection->setTransactionIsolation($isolation);
             throw new BusyCourierException('У курьера есть поездки в этот период. Одновременно он может быть только в одной');
         }
 
@@ -78,7 +79,7 @@ class TripManager implements TripManagerInterface
             $connection->commit();
         } catch (\Throwable $e) {
             $connection->rollBack();
-            throw new DatabaseException('Ошибка при сохранении данных');
+            throw new DatabaseException('Ошибка при сохранении данных', 0, $e);
         } finally {
             // Вернем предыдущий уровень
             $connection->setTransactionIsolation($isolation);
