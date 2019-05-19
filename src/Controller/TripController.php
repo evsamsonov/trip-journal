@@ -20,7 +20,7 @@ class TripController extends AbstractController
     /**
      * Отображение списка поездок
      *
-     * @Route("/")
+     * @Route("/", name="trip")
      * @param Request $request
      * @param TripManagerInterface $tripManager
      * @return Response
