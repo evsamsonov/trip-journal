@@ -43,6 +43,8 @@ class TripManager implements TripManagerInterface
                 ->setParameter('end_date', $filter->getEndDate());
         }
 
+        $queryBuilder->orderBy('t.startDate');
+
         return $queryBuilder->getQuery()->getResult();
     }
 
